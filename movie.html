@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Search App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #0d0d0d;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .search-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+
+    .search-input {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      width: 400px;
+      background-color: #333;
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      .search-input {
+        width: 89% !important;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+    }
+
+    .search-button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      background-color: #e50914;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .search-button:hover {
+      background-color: #b81d24;
+    }
+
+    .loader {
+      display: none;
+      border: 5px solid #333;
+      border-top: 5px solid #e50914;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .movie-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
+    }
+
+    .movie {
+      background-color: #333;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .movie:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .movie:hover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .movie:hover::after {
+      content: 'View Details';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .movie:hover::before,
+    .movie:hover::after {
+      opacity: 1;
+    }
+
+    .movie img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+
+    .movie .info {
+      padding: 20px;
+    }
+
+    .movie .info h3 {
+      margin: 0;
+      font-size: 24px;
+      color: #fff;
+    }
+
+    .movie .info p {
+      margin: 10px 0;
+      color: #ccc;
+      font-size: 16px;
+    }
+
+    .error {
+      color: #e50914;
+      font-weight: 500;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+
+    .footer {
+      background-color: #333;
+      padding: 40px 20px;
+      color: #fff;
+    }
+
+    .footer .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .footer .column {
+      flex: 1;
+      min-width: 250px;
+      margin-bottom: 20px;
+    }
+
+    .footer .column h3 {
+      margin-top: 0;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .footer .column ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer .column ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer .column ul li a {
+      color: #fff;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer .column ul li a:hover {
+      color: #e50914;
+    }
+
+    .footer .social-media {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .footer .social-media a {
+      color: #fff;
+      font-size: 20px;
+      margin-right: 15px;
+      transition: color 0.3s ease;
+    }
+
+    .footer .social-media a:hover {
+      color: #e50914;
+    }
+
+    @media (max-width: 768px) {
+      .footer .container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .footer .column {
+        margin-bottom: 30px;
+      }
+    }
+
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.9);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #333;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 36px;
+      }
+
+      .search-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input {
+        width: 100%;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+
+      .search-button {
+        width: 100%;
+        border-radius: 4px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .movie-list {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+    }
+
+    .magnet-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: #e50914;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-top: 20px;
+    }
+
+    .magnet-button:hover {
+      background-color: #b81d24;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #333;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid #555;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      color: #fff;
+    }
+
+    th {
+      background-color: #444;
+    }
+
+    tr:nth-child(even) {
+      background-color: #222;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Movie Search App</h1>
+    </header>
+    <div class="search-container">
+      <input type="text" id="search" class="search-input" placeholder="Enter movie name">
+      <button id="searchButton" class="search-button"><i class="fas fa-search"></i> Search</button>
+    </div>
+    <div class="error" id="error"></div>
+    <div class="loader" id="loader"></div>
+    <div class="movie-list" id="movieList"></div>
+  </div>
+
+  <div id="movieModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div id="movieDetails"></div>
+    </div>
+  </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="column">
+        <h3>About Us</h3>
+        <p>This Movie Search App is created by Brimesh Desai using HTML, CSS, and JavaScript. Our goal is to provide
+          users with a seamless and enjoyable experience when searching for movie information. The app fetches data from
+          the OMDB API to ensure you get the most accurate and up-to-date movie details.</p>
+      
+      </div>
+      <div class="column">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#">Home</a></li>
+        </ul>
+      </div>
+      <div class="column">
+        <h3>Follow Us</h3>
+        <div class="social-media">
+      
+          <a href="https://www.linkedin.com/in/brimesh-desai-3b68541b2/"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchInput = document.getElementById('search');
+      const searchButton = document.getElementById('searchButton');
+      const movieList = document.getElementById('movieList');
+      const loader = document.getElementById('loader');
+      const error = document.getElementById('error');
+      const movieModal = document.getElementById('movieModal');
+      const movieDetails = document.getElementById('movieDetails');
+      const span = document.getElementsByClassName('close')[0];
+
+      searchButton.addEventListener('click', () => {
+        const query = searchInput.value.trim();
+        if (query === '') {
+          error.textContent = 'Please enter a movie name';
+          return;
+        } else {
+          error.textContent = '';
+        }
+
+        loader.style.display = 'block';
+        movieList.innerHTML = '';
+
+        fetch(`https://www.omdbapi.com/?s=${query}&apikey=786b0dfd`)
+          .then(response => response.json())
+          .then(data => {
+            loader.style.display = 'none';
+            if (data.Response === 'True') {
+              data.Search.forEach(movie => {
+                const movieElement = document.createElement('div');
+                movieElement.classList.add('movie');
+                movieElement.innerHTML = `
+                                    <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/500x750?text=No+Image'}" alt="${movie.Title}">
+                                    <div class="info">
+                                        <h3>${movie.Title}</h3>
+                                        <p>${movie.Year}</p>
+                                    </div>
+                                `;
+                movieElement.addEventListener('click', () => showMovieDetails(movie.Title));
+                movieList.appendChild(movieElement);
+              });
+            } else {
+              error.textContent = 'No movies found';
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+            loader.style.display = 'none';
+            error.textContent = 'Failed to fetch data';
+          });
+      });
+
+      function showMovieDetails(movieTitle) {
+        fetch(`https://www.omdbapi.com/?t=${movieTitle}&apikey=786b0dfd`)
+          .then(response => response.json())
+          .then(data => {
+            movieDetails.innerHTML = `
+                            <h2>${data.Title}</h2>
+                            <p><strong>Year:</strong> ${data.Year}</p>
+                            <p><strong>Rated:</strong> ${data.Rated}</p>
+                            <p><strong>Released:</strong> ${data.Released}</p>
+                            <p><strong>Runtime:</strong> ${data.Runtime}</p>
+                            <p><strong>Genre:</strong> ${data.Genre}</p>
+                            <p><strong>Director:</strong> ${data.Director}</p>
+                            <p><strong>Writer:</strong> ${data.Writer}</p>
+                            <p><strong>Actors:</strong> ${data.Actors}</p>
+                            <p><strong>Plot:</strong> ${data.Plot}</p>
+                            <p><strong>Language:</strong> ${data.Language}</p>
+                            <p><strong>Country:</strong> ${data.Country}</p>
+                            <p><strong>Awards:</strong> ${data.Awards}</p>
+                            <img src="${data.Poster !== 'N/A' ? data.Poster : 'https://via.placeholder.com/500x750?text=No+Image'}" alt="${data.Title}">
+                           
+                        `;
+
+          
+            movieModal.style.display = 'block';
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+            movieDetails.innerHTML = '<p>Failed to fetch movie details.</p>';
+          });
+      }
+
+    
+
+      span.onclick = function () {
+        movieModal.style.display = 'none';
+      }
+
+      window.onclick = function (event) {
+        if (event.target == movieModal) {
+          movieModal.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
